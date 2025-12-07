@@ -1,0 +1,15 @@
+.sidebar {
+  background-color: #6f42c1;
+  min-height: 100vh;
+}
+.sidebar .nav-link {
+  color: #fff;
+  display: block;
+  padding: .5rem .75rem;
+  border-radius: .25rem;
+}
+.sidebar .nav-link.active {
+  background: #fff;
+  color: #6f42c1;
+  font-weight: 700;
+}

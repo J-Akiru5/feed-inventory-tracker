@@ -1,0 +1,24 @@
+# Node and PHP artifacts
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.*
+
+# IDE/editor
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Uploads (user content)
+uploads/
+
+# Logs
+*.log
+
+# Composer
+composer.lock
