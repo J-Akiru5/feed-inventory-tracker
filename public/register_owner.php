@@ -18,23 +18,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($password !== $confirm) $errors[] = 'Passwords do not match.';
 
-    if (empty($errors)) {
-        $pdo = get_pdo();
-        $s = $pdo->prepare('SELECT 1 FROM users WHERE username = :u LIMIT 1');
-        $s->execute([':u' => $email]);
+        if (empty($errors)) {
+      $pdo = get_pdo();
+      $s = $pdo->prepare('SELECT 1 FROM users WHERE username = :u LIMIT 1');
+      $s->execute([':u' => $email]);
         if ($s->fetch()) {
             $errors[] = 'Email already registered.';
         } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
-            $ins->execute([
-              ':u' => $email,
-              ':p' => $hash,
-              ':fn' => $full_name,
-              ':r' => 'owner'
-            ]);
-            $_SESSION['user_id'] = $pdo->lastInsertId();
-            $_SESSION['role'] = 'owner';
+          $hash = password_hash($password, PASSWORD_DEFAULT);
+          $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
+          $ins->execute([
+            ':u' => $email,
+            ':p' => $hash,
+            ':fn' => $full_name,
+            ':r' => 'owner'
+          ]);
+          $_SESSION['user_id'] = $pdo->lastInsertId();
+          $_SESSION['role'] = 'owner';
             $_SESSION['full_name'] = $full_name;
             header('Location: ../index.php');
             exit;

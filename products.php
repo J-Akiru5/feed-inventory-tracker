@@ -4,10 +4,10 @@ require_owner();
 require_once __DIR__ . '/config/database.php';
 
 $pdo = get_pdo();
-$stmt = $pdo->query("SELECT p.*, GROUP_CONCAT(u.unit_name SEPARATOR ', ') AS units
-    FROM products p
-    LEFT JOIN product_units u ON u.product_id = p.id
-    GROUP BY p.id");
+$stmt = $pdo->query("SELECT p.product_id, p.name, p.category, p.base_unit, p.photo_filename, GROUP_CONCAT(u.unit_name SEPARATOR ', ') AS units
+  FROM products p
+  LEFT JOIN product_units u ON u.product_id = p.product_id
+  GROUP BY p.product_id");
 $products = $stmt->fetchAll();
 ?>
 <?php include __DIR__ . '/includes/header.php'; ?>
@@ -37,14 +37,14 @@ $products = $stmt->fetchAll();
             <tr><td colspan="6" class="text-center">No products found.</td></tr>
           <?php else: foreach ($products as $p): ?>
             <tr>
-              <td><?php echo htmlspecialchars($p['id']); ?></td>
+              <td><?php echo htmlspecialchars($p['product_id']); ?></td>
               <td><?php echo htmlspecialchars($p['name']); ?></td>
               <td><?php echo htmlspecialchars($p['category']); ?></td>
               <td><?php echo htmlspecialchars($p['base_unit']); ?></td>
               <td><?php echo htmlspecialchars($p['units'] ?? ''); ?></td>
               <td>
-                <?php if (!empty($p['photo'])): ?>
-                  <img src="/feed-inventory-tracker/uploads/<?php echo htmlspecialchars($p['photo']); ?>" alt="" style="height:48px;object-fit:cover;border-radius:4px;">
+                <?php if (!empty($p['photo_filename'])): ?>
+                  <img src="/feed-inventory-tracker/uploads/<?php echo htmlspecialchars($p['photo_filename']); ?>" alt="" style="height:48px;object-fit:cover;border-radius:4px;">
                 <?php endif; ?>
               </td>
             </tr>

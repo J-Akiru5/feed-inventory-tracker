@@ -16,16 +16,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm) $errors[] = 'Passwords do not match.';
 
     if (empty($errors)) {
-        $pdo = get_pdo();
-        // check existing
-        $s = $pdo->prepare('SELECT 1 FROM users WHERE username = :u LIMIT 1');
-        $s->execute([':u' => $email]);
-        if ($s->fetch()) {
-            $errors[] = 'Email already registered.';
+      $pdo = get_pdo();
+      // check existing
+      $s = $pdo->prepare('SELECT 1 FROM users WHERE username = :u LIMIT 1');
+      $s->execute([':u' => $email]);
+      if ($s->fetch()) {
+        $errors[] = 'Email already registered.';
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
+<<<<<<< HEAD
             $ins->execute([':u' => $email, ':p' => $hash, ':r' => 'storekeeper', ':fn' => $full_name]);
+=======
+            $ins->execute([':u'=>$email,':p'=>$hash,':fn'=>$full_name,':r'=>'storekeeper']);
+>>>>>>> 39573ea8fb54714e868dcde24c5a7a69c3f80dcc
             $_SESSION['user_id'] = $pdo->lastInsertId();
             $_SESSION['role'] = 'storekeeper';
             $_SESSION['full_name'] = $full_name;
