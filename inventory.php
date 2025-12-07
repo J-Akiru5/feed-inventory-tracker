@@ -5,43 +5,48 @@ require_once __DIR__ . '/functions/helpers.php';
 
 require_login();
 
-$pdo = get_pdo();
-$errors = [];
+ $pdo = get_pdo();
+ $errors = [];
 
-// Fetch products for select
-$pstmt = $pdo->query('SELECT id, name, base_unit FROM products ORDER BY name ASC');
-$products = $pstmt->fetchAll();
+ // Fetch products for select (use product_id and base_unit)
+ $pstmt = $pdo->query('SELECT product_id, name, base_unit FROM products ORDER BY name ASC');
+ $products = $pstmt->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id = (int) ($_POST['product_id'] ?? 0);
     $batch_no = sanitize($_POST['batch_no'] ?? '');
+    $supplier = sanitize($_POST['supplier'] ?? '');
     $expiry_date = sanitize($_POST['expiry_date'] ?? '');
     $quantity = (float) ($_POST['quantity'] ?? 0);
     $cost_price = (float) ($_POST['cost_price'] ?? 0);
 
     if ($product_id <= 0 || $quantity <= 0) {
-        $errors[] = 'Product and Quantity are required.';
+      $errors[] = 'Product and Quantity are required.';
     }
 
     if (empty($errors)) {
-        $ist = $pdo->prepare("INSERT INTO inventory (product_id, batch_no, expiry_date, quantity, cost_price, created_at)
-            VALUES (:pid, :batch, :expiry, :qty, :cost, NOW())");
-        $ist->execute([
-            ':pid' => $product_id,
-            ':batch' => $batch_no,
-            ':expiry' => $expiry_date ?: null,
-            ':qty' => $quantity,
-            ':cost' => $cost_price,
-        ]);
-        header('Location: /feed-inventory-tracker/inventory.php');
-        exit;
+      // Insert using schema: inventory (product_id, batch_number, supplier, quantity_on_hand, cost_price, expiry_date)
+      $ist = $pdo->prepare("INSERT INTO inventory (product_id, batch_number, supplier, quantity_on_hand, cost_price, expiry_date)
+        VALUES (:pid, :batch, :supplier, :qty, :cost, :expiry)");
+      $ist->execute([
+        ':pid' => $product_id,
+        ':batch' => $batch_no ?: null,
+        ':supplier' => $supplier ?: null,
+        ':qty' => $quantity,
+        ':cost' => $cost_price,
+        ':expiry' => $expiry_date ?: null,
+      ]);
+      header('Location: /feed-inventory-tracker/inventory.php');
+      exit;
     }
 }
 
 // Fetch inventory batches ordered by expiry date ASC
-$invStmt = $pdo->query("SELECT i.*, p.name AS product_name, p.base_unit FROM inventory i
-    JOIN products p ON p.id = i.product_id
-    ORDER BY CASE WHEN i.expiry_date IS NULL THEN '9999-12-31' ELSE i.expiry_date END ASC");
+// Fetch inventory batches ordered by expiry date (use stock_id and quantity_on_hand)
+$invStmt = $pdo->query("SELECT i.stock_id, i.batch_number, i.expiry_date, i.quantity_on_hand, i.cost_price, i.received_date, p.name AS product_name, p.base_unit
+  FROM inventory i
+  JOIN products p ON p.product_id = i.product_id
+  ORDER BY CASE WHEN i.expiry_date IS NULL THEN '9999-12-31' ELSE i.expiry_date END ASC");
 $batches = $invStmt->fetchAll();
 ?>
 <?php include __DIR__ . '/includes/header.php'; ?>
@@ -108,13 +113,13 @@ $batches = $invStmt->fetchAll();
             <tr><td colspan="7" class="text-center">No inventory batches.</td></tr>
           <?php else: foreach ($batches as $i): ?>
             <tr>
-              <td><?php echo htmlspecialchars($i['id']); ?></td>
+              <td><?php echo htmlspecialchars($i['stock_id']); ?></td>
               <td><?php echo htmlspecialchars($i['product_name']); ?></td>
-              <td><?php echo htmlspecialchars($i['batch_no']); ?></td>
+              <td><?php echo htmlspecialchars($i['batch_number']); ?></td>
               <td><?php echo htmlspecialchars($i['expiry_date']); ?></td>
-              <td><?php echo htmlspecialchars($i['quantity'] . ' ' . $i['base_unit']); ?></td>
+              <td><?php echo htmlspecialchars($i['quantity_on_hand'] . ' ' . $i['base_unit']); ?></td>
               <td><?php echo htmlspecialchars($i['cost_price']); ?></td>
-              <td><?php echo htmlspecialchars($i['created_at']); ?></td>
+              <td><?php echo htmlspecialchars($i['received_date']); ?></td>
             </tr>
           <?php endforeach; endif; ?>
         </tbody>

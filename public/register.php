@@ -16,16 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm) $errors[] = 'Passwords do not match.';
 
     if (empty($errors)) {
-        $pdo = get_pdo();
-        // check existing
-        $s = $pdo->prepare('SELECT id FROM users WHERE username = :u LIMIT 1');
-        $s->execute([':u' => $email]);
-        if ($s->fetch()) {
+          $pdo = get_pdo();
+          // check existing using actual schema column `user_id`
+          $s = $pdo->prepare('SELECT user_id FROM users WHERE username = :u LIMIT 1');
+          $s->execute([':u' => $email]);
+          if ($s->fetch()) {
             $errors[] = 'Email already registered.';
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $ins = $pdo->prepare('INSERT INTO users (username, password, role, full_name, created_at) VALUES (:u,:p,:r,:fn,NOW())');
-            $ins->execute([':u'=>$email,':p'=>$hash,':r'=>'storekeeper',':fn'=>$full_name]);
+            $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
+            $ins->execute([':u'=>$email,':p'=>$hash,':fn'=>$full_name,':r'=>'storekeeper']);
             $_SESSION['user_id'] = $pdo->lastInsertId();
             $_SESSION['role'] = 'storekeeper';
             $_SESSION['full_name'] = $full_name;

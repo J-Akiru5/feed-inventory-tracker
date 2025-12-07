@@ -20,17 +20,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $pdo = get_pdo();
-        $s = $pdo->prepare('SELECT id FROM users WHERE username = :u LIMIT 1');
+        // check existing using `user_id`
+        $s = $pdo->prepare('SELECT user_id FROM users WHERE username = :u LIMIT 1');
         $s->execute([':u' => $email]);
         if ($s->fetch()) {
             $errors[] = 'Email already registered.';
         } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $ins = $pdo->prepare('INSERT INTO users (username, password, role, full_name, phone, business_name, business_address, created_at) VALUES (:u,:p,:r,:fn,:ph,:bn,:ba,NOW())');
-            $ins->execute([
-                ':u'=>$email,':p'=>$hash,':r'=>'owner',':fn'=>$full_name,':ph'=>$phone,':bn'=>$business_name,':ba'=>$business_address
-            ]);
-            $_SESSION['user_id'] = $pdo->lastInsertId();
+          $hash = password_hash($password, PASSWORD_DEFAULT);
+          $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, phone, business_name, business_address, created_at) VALUES (:u,:p,:fn,:r,:ph,:bn,:ba,NOW())');
+          $ins->execute([
+            ':u'=>$email,':p'=>$hash,':fn'=>$full_name,':r'=>'owner',':ph'=>$phone,':bn'=>$business_name,':ba'=>$business_address
+          ]);
+          $_SESSION['user_id'] = $pdo->lastInsertId();
             $_SESSION['role'] = 'owner';
             $_SESSION['full_name'] = $full_name;
             header('Location: ../index.php');

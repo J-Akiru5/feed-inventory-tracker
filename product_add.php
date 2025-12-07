@@ -45,26 +45,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $stmt = $pdo->prepare("INSERT INTO products (name, category, base_unit, photo, created_at) VALUES (:name, :category, :base_unit, :photo, NOW())");
-        $stmt->execute([
-            ':name' => $name,
-            ':category' => $category,
-            ':base_unit' => $base_unit,
-            ':photo' => $photoFilename,
-        ]);
+      // Insert into products table using actual column names; no created_at column exists
+      $stmt = $pdo->prepare("INSERT INTO products (name, category, description, photo_filename, base_unit, is_active) VALUES (:name, :category, :desc, :photo, :base_unit, 1)");
+      $stmt->execute([
+        ':name' => $name,
+        ':category' => $category,
+        ':desc' => '',
+        ':photo' => $photoFilename,
+        ':base_unit' => $base_unit,
+      ]);
 
-        $productId = $pdo->lastInsertId();
+      $productId = $pdo->lastInsertId();
 
-        // Insert default unit into product_units
-        $uStmt = $pdo->prepare("INSERT INTO product_units (product_id, unit_name, conversion_factor) VALUES (:pid, :unit, :factor)");
-        $uStmt->execute([
-            ':pid' => $productId,
-            ':unit' => $base_unit,
-            ':factor' => 1.00,
-        ]);
+      // Insert default unit into product_units (unit_id is auto)
+      $uStmt = $pdo->prepare("INSERT INTO product_units (product_id, unit_name, conversion_factor, selling_price) VALUES (:pid, :unit, :factor, :price)");
+      $uStmt->execute([
+        ':pid' => $productId,
+        ':unit' => $base_unit,
+        ':factor' => 1.00,
+        ':price' => 0.00,
+      ]);
 
-        header('Location: /feed-inventory-tracker/products.php');
-        exit;
+      header('Location: /feed-inventory-tracker/products.php');
+      exit;
     }
 }
 ?>

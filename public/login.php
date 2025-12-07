@@ -13,14 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Email and password are required.';
     } else {
         $pdo = get_pdo();
-        $stmt = $pdo->prepare('SELECT id, password, role, full_name FROM users WHERE username = :username AND role = :role LIMIT 1');
+        $stmt = $pdo->prepare('SELECT user_id, password_hash, role, full_name FROM users WHERE username = :username AND role = :role LIMIT 1');
         $stmt->execute(['username' => $username, 'role' => $role]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['full_name'] = $user['full_name'];
+        if ($user && password_verify($password, $user['password_hash'])) {
+          $_SESSION['user_id'] = $user['user_id'];
+          $_SESSION['role'] = $user['role'];
+          $_SESSION['full_name'] = $user['full_name'];
             header('Location: ../index.php');
             exit;
         } else {
