@@ -1,0 +1,28 @@
+/* Auth pages styles: gradient background and card styling */
+body.auth-bg {
+  background: linear-gradient(135deg,#f0f6ff 0%, #f9f0ff 100%);
+  min-height: 100vh;
+}
+.auth-card {
+  max-width: 520px;
+  margin: 48px auto;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(20,20,50,0.06);
+  background: #fff;
+  padding: 32px;
+}
+.auth-hero {
+  display:flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:linear-gradient(90deg,#6f42c1,#8870ff);color:#fff;margin:0 auto 18px;
+}
+.role-toggle .btn {
+  border-radius:10px;text-align:left;padding:18px 14px;height:80px;
+}
+.role-toggle .btn.active {
+  box-shadow:0 4px 14px rgba(100,50,200,0.12);border:1px solid #6f42c1;background:#fff;color:#222;
+}
+.link-muted {color:#7b77a5}
+.back-link {color:#7b5cff;display:inline-block;margin-bottom:12px}
+.auth-note {background:#f7f4ff;border-radius:8px;padding:12px;margin-top:10px}
+.gradient-btn {
+  background: linear-gradient(90deg,#07a7ff,#7b42ff);border:none;color:#fff;padding:12px 20px;border-radius:10px;
+}
