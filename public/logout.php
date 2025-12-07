@@ -13,5 +13,5 @@ if (ini_get('session.use_cookies')) {
 }
 
 session_destroy();
-header('Location: /public/login.php');
+header('Location: /feed-inventory-tracker/public/login.php');
 exit;

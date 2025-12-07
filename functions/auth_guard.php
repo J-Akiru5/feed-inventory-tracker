@@ -10,7 +10,8 @@ function require_login()
     }
 
     if (empty($_SESSION['user_id'])) {
-        header('Location: /public/login.php');
+        // Redirect to the app's login page. Adjust path to project folder.
+        header('Location: /feed-inventory-tracker/public/login.php');
         exit;
     }
 }
