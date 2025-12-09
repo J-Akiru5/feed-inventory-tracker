@@ -7,8 +7,9 @@ require_once __DIR__ . '/functions/helpers.php';
 $pdo = get_pdo();
 $errors = [];
 
-// Fetch categories for select (distinct existing categories)
-$catStmt = $pdo->query("SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != ''");
+// Ensure categories table exists and fetch categories for select (union of custom and existing)
+$pdo->exec("CREATE TABLE IF NOT EXISTS categories (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(191) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+$catStmt = $pdo->query("SELECT name FROM categories UNION SELECT DISTINCT category COLLATE utf8mb4_unicode_ci AS name FROM products WHERE category IS NOT NULL AND category != '' ORDER BY name ASC");
 $categories = $catStmt->fetchAll(PDO::FETCH_COLUMN);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
