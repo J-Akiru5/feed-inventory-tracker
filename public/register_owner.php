@@ -31,24 +31,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($step === 'form')) {
         } else {
           $hash = password_hash($password, PASSWORD_DEFAULT);
           $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
-          $ins->execute([
-            ':u' => $email,
-            ':p' => $hash,
-            ':fn' => $full_name,
-            ':r' => 'owner'
-          ]);
-          $lastId = $pdo->lastInsertId();
-          // Do not auto-login owner; show confirmation page instead
-          $registered = true;
-          $created_user = [
-            'user_id' => $lastId,
-            'full_name' => $full_name,
-            'email' => $email,
-            'business_name' => $business_name,
-            'role' => 'Owner'
-          ];
-          // clear POST to avoid re-submission when showing the success view
-          $_POST = [];
+          try {
+            $ins->execute([
+              ':u' => $email,
+              ':p' => $hash,
+              ':fn' => $full_name,
+              ':r' => 'owner'
+            ]);
+            $lastId = $pdo->lastInsertId();
+            // Do not auto-login owner; show confirmation page instead
+            $registered = true;
+            $created_user = [
+              'user_id' => $lastId,
+              'full_name' => $full_name,
+              'email' => $email,
+              'business_name' => $business_name,
+              'role' => 'Owner'
+            ];
+            // clear POST to avoid re-submission when showing the success view
+            $_POST = [];
+          } catch (PDOException $e) {
+            $sqlState = $e->getCode();
+            $errInfo = $e->errorInfo ?? null;
+            $isDuplicate = false;
+            if ($sqlState === '23000') {
+                $isDuplicate = true;
+            } elseif (is_array($errInfo) && isset($errInfo[1]) && $errInfo[1] == 1062) {
+                $isDuplicate = true;
+            }
+            if ($isDuplicate) {
+                $errors[] = 'Email already registered.';
+                $duplicate_email = true;
+            } else {
+                throw $e;
+            }
+          }
         }
     }
 }
@@ -207,5 +224,17 @@ function render_owner_form(array $errors = []) {
     ?>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <?php if (!empty($duplicate_email)): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        Swal.fire({
+          icon: 'warning',
+          title: 'Email already registered',
+          text: 'An owner account with that email already exists. Please use a different email or login.',
+        });
+      });
+    </script>
+  <?php endif; ?>
 </body>
 </html>

@@ -25,12 +25,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
-            $ins->execute([':u' => $email, ':p' => $hash, ':fn' => $full_name, ':r' => 'storekeeper']);
-            $_SESSION['user_id'] = $pdo->lastInsertId();
-            $_SESSION['role'] = 'storekeeper';
-            $_SESSION['full_name'] = $full_name;
-            header('Location: ../index.php');
-            exit;
+            try {
+              $ins->execute([':u' => $email, ':p' => $hash, ':fn' => $full_name, ':r' => 'storekeeper']);
+              $_SESSION['user_id'] = $pdo->lastInsertId();
+              $_SESSION['role'] = 'storekeeper';
+              $_SESSION['full_name'] = $full_name;
+              header('Location: ../index.php');
+              exit;
+            } catch (PDOException $e) {
+              // Handle duplicate entry race condition or unique constraint violation
+              $sqlState = $e->getCode();
+              $errInfo = $e->errorInfo ?? null;
+              $isDuplicate = false;
+              if ($sqlState === '23000') {
+                $isDuplicate = true;
+              } elseif (is_array($errInfo) && isset($errInfo[1]) && $errInfo[1] == 1062) {
+                $isDuplicate = true;
+              }
+              if ($isDuplicate) {
+                $errors[] = 'Email already registered.';
+                $duplicate_email = true;
+              } else {
+                // rethrow for unexpected errors so we can notice them during development
+                throw $e;
+              }
+            }
         }
     }
 }
@@ -79,5 +98,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <?php if (!empty($duplicate_email)): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        Swal.fire({
+          icon: 'warning',
+          title: 'Email already registered',
+          text: 'An account with that email already exists. Please use a different email or login.',
+        });
+      });
+    </script>
+  <?php endif; ?>
 </body>
 </html>
