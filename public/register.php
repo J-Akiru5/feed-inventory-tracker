@@ -25,11 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
-<<<<<<< HEAD
-            $ins->execute([':u' => $email, ':p' => $hash, ':r' => 'storekeeper', ':fn' => $full_name]);
-=======
-            $ins->execute([':u'=>$email,':p'=>$hash,':fn'=>$full_name,':r'=>'storekeeper']);
->>>>>>> 39573ea8fb54714e868dcde24c5a7a69c3f80dcc
+            $ins->execute([':u' => $email, ':p' => $hash, ':fn' => $full_name, ':r' => 'storekeeper']);
             $_SESSION['user_id'] = $pdo->lastInsertId();
             $_SESSION['role'] = 'storekeeper';
             $_SESSION['full_name'] = $full_name;
