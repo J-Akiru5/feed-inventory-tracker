@@ -100,7 +100,7 @@ include __DIR__ . '/includes/sidebar.php';
       <div class="text-muted">View business insights and data</div>
     </div>
 
-    <div class="card mb-4 p-3">
+    <div class="card mb-4 p-3 glass-panel">
       <div class="d-flex gap-3">
         <a class="btn <?php echo $tab === 'sales' ? 'btn-success' : 'btn-light'; ?>" href="?tab=sales">Sales Report</a>
         <a class="btn <?php echo $tab === 'inventory' ? 'btn-success' : 'btn-light'; ?>" href="?tab=inventory">Inventory Report</a>
@@ -111,7 +111,7 @@ include __DIR__ . '/includes/sidebar.php';
 
     <?php if ($tab === 'sales'): ?>
 
-    <div class="card mb-4 p-3">
+    <div class="card mb-4 p-3 glass-panel">
       <div class="row align-items-center">
         <div class="col-md-3">
           <select class="form-select" onchange="location = this.value">
@@ -125,32 +125,31 @@ include __DIR__ . '/includes/sidebar.php';
 
     <div class="row g-3 mb-4">
       <div class="col-md-3">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Total Sales</div>
           <div class="h4">₱<?php echo number_format($totalSales,2); ?></div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Cash Sales</div>
           <div class="h4 text-success">₱<?php echo number_format($cashSales,2); ?></div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Online Sales</div>
           <div class="h4 text-primary">₱<?php echo number_format($onlineSales,2); ?></div>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Credit Sales</div>
           <div class="h4 text-warning">₱<?php echo number_format($creditSales,2); ?></div>
         </div>
       </div>
     </div>
-
-    <div class="card">
+    <div class="card glass-panel">
       <div class="card-body">
         <h5 class="card-title">Sales Transactions</h5>
         <div class="table-responsive">
@@ -188,26 +187,25 @@ include __DIR__ . '/includes/sidebar.php';
 
     <div class="row g-3 mb-4">
       <div class="col-md-4">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Total Inventory Value</div>
           <div class="h4">₱<?php echo number_format($totalInventoryValue,2); ?></div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Total Products</div>
           <div class="h4"><?php echo (int)$totalProducts; ?></div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Low Stock Items</div>
           <div class="h4 text-warning"><?php echo (int)$lowStockProducts; ?></div>
         </div>
       </div>
     </div>
-
-    <div class="card">
+    <div class="card glass-panel">
       <div class="card-body">
         <h5 class="card-title">Current Stock Levels</h5>
         <div class="table-responsive">
@@ -244,7 +242,7 @@ include __DIR__ . '/includes/sidebar.php';
 
     <?php else: ?>
 
-    <div class="card p-4 text-center text-muted">Report tab not implemented yet.</div>
+    <div class="card p-4 glass-panel text-center">Report tab not implemented yet.</div>
 
     <?php endif; ?>
 

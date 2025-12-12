@@ -3,6 +3,8 @@ require_once __DIR__ . '/functions/auth_guard.php';
 require_login();
 require_once __DIR__ . '/config/database.php';
 
+if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/functions/permissions.php';
 $pdo = get_pdo();
 
 // Summary figures
@@ -48,32 +50,34 @@ include __DIR__ . '/includes/sidebar.php';
         <div class="text-muted">Manage customer credit accounts and payments</div>
       </div>
       <div>
-        <a href="customers.php?action=add" class="btn btn-primary rounded-pill px-4">+ Add Customer</a>
+        <?php if (is_owner()): ?>
+          <a href="customers.php?action=add" class="btn btn-primary rounded-pill px-4">+ Add Customer</a>
+        <?php endif; ?>
       </div>
     </div>
 
     <div class="row g-3 mb-4">
       <div class="col-md-4">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Total Outstanding</div>
           <div class="h4">₱<?php echo number_format($totalOutstanding,2); ?></div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Total Customers</div>
           <div class="h4"><?php echo $totalCustomers; ?></div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">With Outstanding Credit</div>
           <div class="h4"><?php echo count($customers); ?></div>
         </div>
       </div>
     </div>
 
-    <div class="card mb-3 p-3">
+    <div class="card mb-3 p-3 glass-panel">
       <div class="d-flex justify-content-end align-items-center gap-2">
         <div class="btn-group btn-group-sm" role="group" aria-label="view toggle">
           <button class="btn btn-outline-secondary active">Cards</button>
@@ -82,7 +86,7 @@ include __DIR__ . '/includes/sidebar.php';
       </div>
     </div>
 
-    <div class="card">
+    <div class="card glass-panel">
       <div class="card-body">
         <h5 class="card-title">Customers with Outstanding Balances</h5>
         <div class="table-responsive">

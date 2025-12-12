@@ -1,73 +1,119 @@
+:root {
+  /* Theme variables - violet glass (contrast tuned) */
+  --bg: #0f0b16;
+  /* dark but warm */
+  --bg-accent: linear-gradient(180deg, rgba(15, 11, 22, 0.95), rgba(18, 8, 38, 0.98));
+  --panel-bg: rgba(255, 255, 255, 0.035);
+  --panel-glass: rgba(255, 255, 255, 0.05);
+  --primary: #7b42ff;
+  /* violet */
+  --accent: #06a9ff;
+  /* cyan accent */
+  --muted: rgba(255, 255, 255, 0.6);
+  --text: rgba(255, 255, 255, 0.8);
+  /* plain white at 80% opacity */
+  --radius: 12px;
+  --shadow-1: 0 8px 28px rgba(6, 4, 20, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --weight-strong: 700;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  background-image: var(--bg-accent);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  line-height: 1.45;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale
+}
+
+/* Sidebar */
 .sidebar {
   min-height: 100vh
 }
+
 .sidebar .sidebar-inner {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #6e0fbf 0%, #7a2cff 60%, #4b007a 100%);
-  border-radius: 0
+  background: linear-gradient(180deg, rgba(91, 36, 170, 0.95) 0%, rgba(70, 25, 150, 0.9) 60%, rgba(40, 8, 95, 0.9) 100%);
+    border-radius: 0;
+    padding: 22px;
 }
 
 .sidebar .brand-title {
-  font-weight: 800;
-  font-size: 1.25rem;
-  line-height: 1
+  font-weight: var(--weight-strong);
+    font-size: 1.3rem;
+    line-height: 1;
 }
 
 .sidebar .brand-sub {
-  opacity: .9;
-  margin-top: .5rem
+  opacity: .95;
+    margin-top: .4rem
 }
 
 .sidebar .role {
-  color: #bcd7ff
+  color: var(--muted)
 }
 
 .sidebar .nav {
-  padding-left: 0
+  padding-left: 0;
+    margin-top: 14px
 }
+
 .sidebar .nav-link {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text);
     display: flex;
     align-items: center;
-    padding: .85rem 1rem;
-    border-radius: 12px;
-    text-decoration: none
+  padding: .85rem 12px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: all .18s ease
   }
   
   .sidebar .nav-link .icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.06);
+  width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
     color: #fff
   }
   
   .sidebar .nav-link .label {
-    font-weight: 600
+  font-weight: 600;
+    margin-left: 8px
   }
   
   .sidebar .nav-link:not(.active):hover {
-    background: rgba(255, 255, 255, 0.04)
+  transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.03)
   }
   
   .sidebar .nav-link.active {
-    background: linear-gradient(90deg, #3fd1ff, #9b6bff);
+  background: linear-gradient(90deg, var(--accent), var(--primary));
   color: #fff;
-  box-shadow: 0 6px 18px rgba(75, 0, 122, 0.18)
+  box-shadow: var(--shadow-1)
 }
+
 .sidebar .nav-item {
-  margin-bottom: .5rem
+  margin-bottom: .6rem
 }
 
 .sidebar .logout {
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--text);
   padding: .85rem 1rem;
-  border-radius: 12px
+  border-radius: var(--radius);
+    margin-top: 12px
 }
 
 .sidebar .logout .icon {
@@ -75,5 +121,118 @@
 }
 
 .sidebar .text-muted {
-  color: rgba(255, 255, 255, 0.85)
+  color: rgba(255, 255, 255, 0.8)
+  }
+  
+  /* Cards & panels - glass effect */
+  .card,
+  .card-body,
+  .panel,
+  .auth-card,
+  .glass-panel {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text)
+  }
+  
+  .glass-panel {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  }
+  
+  /* Buttons */
+  .btn,
+  .gradient-btn {
+    font-weight: var(--weight-strong);
+    border-radius: 10px
+  }
+  
+  .gradient-btn {
+    background: linear-gradient(90deg, var(--accent), var(--primary));
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 24px rgba(99, 44, 186, 0.18)
+  }
+  
+  .btn-outline-secondary {
+    color: var(--muted);
+    border-color: rgba(255, 255, 255, 0.06)
+  }
+  
+  /* Text stronger */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-weight: var(--weight-strong);
+    color: var(--text)
+  }
+  
+  /* Small utilities */
+  .text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  
+  .small {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* make table text readable on dark background */
+  .table,
+  table {
+    color: var(--text)
+  }
+  
+  /* Remove white table background and inner "card" look inside glass panels */
+  .table {
+    background: transparent !important;
+  }
+  
+  .table thead th {
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: var(--text) !important;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+  
+  .table tbody tr,
+  .table tbody td,
+  .table tbody th {
+    background: transparent !important;
+    color: var(--text) !important;
+  }
+  
+  .table-hover tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+  
+  .table.table-bordered td,
+  .table.table-bordered th {
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  }
+  
+  .table-responsive {
+    background: transparent;
+    padding: 0;
+    /* avoid double spacing inside the glass panel */
+    border: none;
+  }
+  
+  /* Make table captions and empty state subtle */
+  .table thead th .badge,
+  .table .text-muted {
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+  
+  /* Responsive tweaks */
+  @media (max-width:768px) {
+    .sidebar {
+      position: relative;
+      padding: 14px
+    }
 }
+

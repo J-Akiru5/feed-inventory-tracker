@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../functions/session.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 $errors = [];
@@ -18,9 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-          $_SESSION['user_id'] = $user['id'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['full_name'] = $user['full_name'];
+          set_user_session($user['id'], $user['role'], $user['full_name']);
             header('Location: ../index.php');
             exit;
         } else {

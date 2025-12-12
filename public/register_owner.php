@@ -24,20 +24,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($step === 'form')) {
 
         if (empty($errors)) {
       $pdo = get_pdo();
-      $s = $pdo->prepare('SELECT 1 FROM users WHERE username = :u LIMIT 1');
-      $s->execute([':u' => $email]);
-        if ($s->fetch()) {
-            $errors[] = 'Email already registered.';
-        } else {
+      $hasEmail = (bool) $pdo->query("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='users' AND COLUMN_NAME='email'")->fetchColumn();
+      if ($hasEmail) {
+          $s = $pdo->prepare('SELECT user_id FROM users WHERE username = :u OR email = :e LIMIT 1');
+          $s->execute([':u' => $email, ':e' => $email]);
+      } else {
+          $s = $pdo->prepare('SELECT user_id FROM users WHERE username = :u LIMIT 1');
+          $s->execute([':u' => $email]);
+      }
+      if ($s->fetch()) {
+          $errors[] = 'Email already registered.';
+      } else {
           $hash = password_hash($password, PASSWORD_DEFAULT);
-          $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
+          if ($hasEmail) {
+            $ins = $pdo->prepare('INSERT INTO users (username, email, password_hash, full_name, role, created_at) VALUES (:u,:e,:p,:fn,:r,NOW())');
+          } else {
+            $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
+          }
           try {
-            $ins->execute([
-              ':u' => $email,
-              ':p' => $hash,
-              ':fn' => $full_name,
-              ':r' => 'owner'
-            ]);
+            $params = [':u' => $email, ':p' => $hash, ':fn' => $full_name, ':r' => 'owner'];
+            if ($hasEmail) $params[':e'] = $email;
+            $ins->execute($params);
             $lastId = $pdo->lastInsertId();
             // Do not auto-login owner; show confirmation page instead
             $registered = true;

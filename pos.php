@@ -33,7 +33,7 @@ include __DIR__ . '/includes/sidebar.php';
   <div class="container-fluid">
     <div class="row">
       <div class="col-lg-8">
-        <div class="card mb-3 p-3">
+        <div class="card mb-3 p-3 glass-panel">
           <div class="row g-2 align-items-center">
             <div class="col-md-6">
               <input id="posSearch" class="form-control" placeholder="Search products..." />
@@ -55,14 +55,14 @@ include __DIR__ . '/includes/sidebar.php';
           </div>
         </div>
 
-        <div id="posProducts" class="card p-5 text-center text-muted">
+        <div id="posProducts" class="card p-5 glass-panel text-center">
           <?php if (empty($products)): ?>
             <div class="p-5">No products found</div>
           <?php else: ?>
             <div class="row g-3" id="posCards">
               <?php foreach ($products as $p): ?>
                 <div class="col-md-4">
-                  <div class="card p-3 h-100 pos-product" data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>" data-cat="<?php echo htmlspecialchars($p['category']); ?>">
+                  <div class="card p-3 h-100 pos-product glass-panel" data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>" data-cat="<?php echo htmlspecialchars($p['category']); ?>">
                     <div class="fw-bold"><?php echo htmlspecialchars($p['name']); ?></div>
                     <div class="small text-muted"><?php echo htmlspecialchars($p['category']); ?></div>
                     <div class="mt-3">Stock: <?php echo rtrim(rtrim(number_format((float)$p['stock'],2),'0'),'.'); ?> <?php echo htmlspecialchars($p['base_unit']); ?></div>
@@ -93,7 +93,7 @@ include __DIR__ . '/includes/sidebar.php';
       </div>
 
       <div class="col-lg-4">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <h5 class="card-title">Cart</h5>
           <div id="cartEmpty" class="text-muted text-center py-4">Cart is empty</div>
           <div id="cartContents" style="display:none;">

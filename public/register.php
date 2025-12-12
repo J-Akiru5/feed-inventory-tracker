@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../functions/helpers.php';
+require_once __DIR__ . '/../functions/session.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 $errors = [];
@@ -17,19 +18,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
       $pdo = get_pdo();
-      // check existing
-      $s = $pdo->prepare('SELECT 1 FROM users WHERE username = :u LIMIT 1');
-      $s->execute([':u' => $email]);
+      // detect if users.email column exists in this schema
+      $hasEmail = (bool) $pdo->query("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='users' AND COLUMN_NAME='email'")->fetchColumn();
+
+      // prepare existence check (check username and email if available)
+      if ($hasEmail) {
+        $s = $pdo->prepare('SELECT user_id FROM users WHERE username = :u OR email = :e LIMIT 1');
+        $s->execute([':u' => $email, ':e' => $email]);
+      } else {
+        $s = $pdo->prepare('SELECT user_id FROM users WHERE username = :u LIMIT 1');
+        $s->execute([':u' => $email]);
+      }
       if ($s->fetch()) {
         $errors[] = 'Email already registered.';
+      } else {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        if ($hasEmail) {
+          $ins = $pdo->prepare('INSERT INTO users (username, email, password_hash, full_name, role, created_at) VALUES (:u, :e, :p, :fn, :r, NOW())');
         } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u,:p,:fn,:r,NOW())');
-            try {
-              $ins->execute([':u' => $email, ':p' => $hash, ':fn' => $full_name, ':r' => 'storekeeper']);
-              $_SESSION['user_id'] = $pdo->lastInsertId();
-              $_SESSION['role'] = 'storekeeper';
-              $_SESSION['full_name'] = $full_name;
+          $ins = $pdo->prepare('INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (:u, :p, :fn, :r, NOW())');
+        }
+        try {
+          $params = [':u' => $email, ':p' => $hash, ':fn' => $full_name, ':r' => 'storekeeper'];
+          if ($hasEmail) $params[':e'] = $email;
+              $ins->execute($params);
+              set_user_session($pdo->lastInsertId(), 'storekeeper', $full_name);
               header('Location: ../index.php');
               exit;
             } catch (PDOException $e) {

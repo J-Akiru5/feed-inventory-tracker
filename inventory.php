@@ -3,16 +3,25 @@ require_once __DIR__ . '/functions/auth_guard.php';
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/functions/helpers.php';
 
+$require_once_line = "require_once __DIR__ . '/functions/permissions.php';";
 require_login();
 
- $pdo = get_pdo();
- $errors = [];
+if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/functions/permissions.php';
+
+$pdo = get_pdo();
+$user_role = get_user_role();
+$errors = [];
 
  // Fetch products for select (use product_id and base_unit)
  $pstmt = $pdo->query('SELECT product_id, name, base_unit FROM products ORDER BY name ASC');
  $products = $pstmt->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  // Only owners may perform receive/modify actions. Storekeepers are view-only.
+  if (!is_owner()) {
+    $errors[] = 'You do not have permission to modify inventory.';
+  } else {
     $product_id = (int) ($_POST['product_id'] ?? 0);
     $batch_no = sanitize($_POST['batch_no'] ?? '');
     $supplier = sanitize($_POST['supplier'] ?? '');
@@ -39,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       header('Location: /feed-inventory-tracker/inventory.php');
       exit;
     }
+    }
 }
 
 // Fetch inventory batches ordered by expiry date ASC
@@ -60,14 +70,16 @@ $batches = $invStmt->fetchAll();
       <div class="alert alert-danger"><?php echo implode('<br>', array_map('htmlspecialchars', $errors)); ?></div>
     <?php endif; ?>
 
-    <form method="post">
-      <div class="row g-3">
+    <?php if (is_owner()): ?>
+      <form method="post">
+        <div class="card p-3 glass-panel mb-3">
+          <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label">Product</label>
-          <select name="product_id" class="form-select" required>
+          <select name="product_id" class="form-select" <?php echo (is_owner() ? 'required' : 'disabled'); ?>>
             <option value="">-- Select product --</option>
             <?php foreach ($products as $p): ?>
-              <option value="<?php echo (int)$p['id']; ?>"><?php echo htmlspecialchars($p['name'] . ' (' . $p['base_unit'] . ')'); ?></option>
+              <option value="<?php echo (int)$p['product_id']; ?>"><?php echo htmlspecialchars($p['name'] . ' (' . $p['base_unit'] . ')'); ?></option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -83,19 +95,25 @@ $batches = $invStmt->fetchAll();
           <label class="form-label">Qty</label>
           <input name="quantity" type="number" step="0.01" class="form-control" required>
         </div>
-        <div class="col-md-2">
-          <label class="form-label">Cost Price</label>
-          <input name="cost_price" type="number" step="0.01" class="form-control">
+            <div class="col-md-2">
+              <label class="form-label">Cost Price</label>
+              <input name="cost_price" type="number" step="0.01" class="form-control">
+            </div>
+          </div>
+          <?php if ($user_role === 'owner'): ?>
+            <div class="mt-3 d-grid">
+              <button class="btn btn-primary">Receive</button>
+            </div>
+          <?php endif; ?>
         </div>
-      </div>
-      <div class="mt-3 d-grid">
-        <button class="btn btn-primary">Receive</button>
-      </div>
-    </form>
+      </form>
+    <?php else: ?>
+      <div class="alert alert-secondary">View-only: You can browse inventory, but only the owner can receive stock.</div>
+    <?php endif; ?>
 
     <hr>
     <h3>Current Inventory Batches</h3>
-    <div class="table-responsive">
+    <div class="table-responsive card p-3 glass-panel">
       <table class="table table-sm table-bordered">
         <thead>
           <tr>

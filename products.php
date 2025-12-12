@@ -1,14 +1,22 @@
 <?php
 require_once __DIR__ . '/functions/auth_guard.php';
-require_owner();
+require_login();
 require_once __DIR__ . '/config/database.php';
 
 if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/functions/permissions.php';
 
 $pdo = get_pdo();
 
 // Handle product delete requests (delete units & inventory first, then product)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_product') {
+  // server-side permission check: only owners can delete products
+  if (!is_owner()) {
+    set_flash('You do not have permission to delete products.');
+    header('Location: /feed-inventory-tracker/products.php');
+    exit;
+  }
+
   $productId = (int)($_POST['product_id'] ?? 0);
   if ($productId > 0) {
     try {
@@ -20,13 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
       $delP = $pdo->prepare('DELETE FROM products WHERE product_id = :id');
       $delP->execute([':id' => $productId]);
       $pdo->commit();
-      $_SESSION['flash'] = 'Product deleted successfully.';
+      set_flash('Product deleted successfully.');
     } catch (Exception $e) {
       if ($pdo->inTransaction()) $pdo->rollBack();
-      $_SESSION['flash'] = 'Failed to delete product. It may be referenced by other records.';
+      set_flash('Failed to delete product. It may be referenced by other records.');
     }
   } else {
-    $_SESSION['flash'] = 'Invalid product selected.';
+    set_flash('Invalid product selected.');
   }
   header('Location: /feed-inventory-tracker/products.php');
   exit;
@@ -67,19 +75,20 @@ $categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 <main class="p-4 flex-fill">
   <div class="container">
-    <?php if (!empty($_SESSION['flash'])): ?>
-      <div class="alert alert-info"><?php echo htmlspecialchars($_SESSION['flash']); ?></div>
-      <?php unset($_SESSION['flash']); ?>
+    <?php $flash = get_flash(); if (!empty($flash)): ?>
+      <div class="alert alert-info"><?php echo htmlspecialchars($flash); ?></div>
     <?php endif; ?>
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
         <h2>Products &amp; Inventory</h2>
         <div class="text-muted">Manage your product catalog and stock levels</div>
       </div>
-      <a href="/feed-inventory-tracker/product_add.php" class="btn btn-dark rounded-pill px-4">+ Add Product</a>
+      <?php if (is_owner()): ?>
+        <a href="/feed-inventory-tracker/product_add.php" class="btn btn-dark rounded-pill px-4">+ Add Product</a>
+      <?php endif; ?>
     </div>
 
-    <div class="card mb-4 p-3">
+    <div class="card mb-4 p-3 glass-panel">
       <div class="row g-3">
         <div class="col-md-6">
           <input id="productSearch" class="form-control" placeholder="Search products..." />
@@ -108,7 +117,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
       <?php foreach ($products as $p): ?>
         <?php $stock = (float)($p['stock'] ?? 0); $isLow = $stock <= 5; $units = $unitsByProduct[$p['product_id']] ?? []; ?>
         <div class="col-md-4">
-          <div class="card p-3 h-100">
+          <div class="card p-3 h-100 glass-panel">
             <div class="d-flex gap-3 align-items-start">
               <div style="width:48px;height:48px;border-radius:8px;background:#e9f6ff;display:flex;align-items:center;justify-content:center;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L20 6V18L12 22L4 18V6L12 2Z" stroke="#2FA4FF" stroke-width="1.2" stroke-linejoin="round"/></svg>
@@ -117,13 +126,15 @@ $categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 <div class="fw-bold"><?php echo htmlspecialchars($p['name']); ?></div>
                 <div class="text-muted small"><?php echo htmlspecialchars($p['category']); ?></div>
               </div>
-                    <div class="ms-auto">
-                      <form method="post" onsubmit="return confirm('Delete this product and all related inventory? This cannot be undone.');" style="display:inline">
-                        <input type="hidden" name="action" value="delete_product">
-                        <input type="hidden" name="product_id" value="<?php echo (int)$p['product_id']; ?>">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                      </form>
-                    </div>
+                    <?php if (is_owner()): ?>
+                      <div class="ms-auto">
+                        <form method="post" onsubmit="return confirm('Delete this product and all related inventory? This cannot be undone.');" style="display:inline">
+                          <input type="hidden" name="action" value="delete_product">
+                          <input type="hidden" name="product_id" value="<?php echo (int)$p['product_id']; ?>">
+                          <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                      </div>
+                    <?php endif; ?>
             </div>
 
             <div class="mt-3 text-muted small">
@@ -149,7 +160,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
       <?php endforeach; ?>
     </div>
 
-    <div id="tableView" style="display:none;" class="card">
+    <div id="tableView" style="display:none;" class="card glass-panel">
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-hover">

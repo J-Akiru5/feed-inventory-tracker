@@ -35,6 +35,16 @@ $stmt = $pdo->prepare("SELECT s.sale_date, COALESCE(c.full_name, 'Walk-in') AS c
 $stmt->execute();
 $recentSales = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Recent audit logs (if table exists)
+$auditLogs = [];
+try {
+  $alog = $pdo->prepare("SELECT a.event_time, a.action, a.details, COALESCE(u.full_name, 'System') AS user_name FROM audit_logs a LEFT JOIN users u ON a.user_id = u.user_id ORDER BY a.event_time DESC LIMIT 5");
+  $alog->execute();
+  $auditLogs = $alog->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+  // audit_logs may not exist yet; ignore
+}
+
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
@@ -43,36 +53,36 @@ include __DIR__ . '/includes/sidebar.php';
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h3>Dashboard</h3>
-      <div class="text-muted">Welcome back, <?php echo htmlspecialchars($_SESSION['full_name'] ?? ''); ?></div>
+      <div class="text-muted">Welcome back, <?php echo htmlspecialchars(get_user_full_name() ?? ''); ?></div>
     </div>
 
     <div class="row g-3 mb-4">
       <div class="col-sm-6 col-md-4 col-lg-2">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Today's Sales</div>
           <div class="h5">₱<?php echo number_format($todaySales,2); ?></div>
         </div>
       </div>
       <div class="col-sm-6 col-md-4 col-lg-2">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Total Products</div>
           <div class="h5"><?php echo (int)$totalProducts; ?></div>
         </div>
       </div>
       <div class="col-sm-6 col-md-4 col-lg-2">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Low Stock Items</div>
           <div class="h5"><?php echo (int)$lowStock; ?></div>
         </div>
       </div>
       <div class="col-sm-6 col-md-4 col-lg-3">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Credit Outstanding</div>
           <div class="h5">₱<?php echo number_format($creditOutstanding,2); ?></div>
         </div>
       </div>
       <div class="col-sm-6 col-md-4 col-lg-3">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Items Expiring Soon</div>
           <div class="h5"><?php echo (int)$expiringSoon; ?></div>
         </div>
@@ -81,7 +91,7 @@ include __DIR__ . '/includes/sidebar.php';
 
     <div class="row g-3">
       <div class="col-12">
-        <div class="card mb-4">
+        <div class="card mb-4 glass-panel">
           <div class="card-body">
             <h5 class="card-title">Recent Sales</h5>
             <?php if (empty($recentSales)): ?>
@@ -115,10 +125,18 @@ include __DIR__ . '/includes/sidebar.php';
       </div>
 
       <div class="col-12">
-        <div class="card mb-4">
+        <div class="card mb-4 glass-panel">
           <div class="card-body">
             <h5 class="card-title">Recent Audit Logs</h5>
-            <div class="p-5 text-center text-muted">No audit logs yet</div>
+            <?php if (empty($auditLogs)): ?>
+              <div class="p-5 text-center text-muted">No audit logs yet</div>
+            <?php else: ?>
+              <ul class="list-unstyled mb-0">
+                <?php foreach ($auditLogs as $al): ?>
+                  <li class="mb-2"><small class="text-muted"><?php echo date('M j, Y g:i A', strtotime($al['event_time'])); ?></small> — <strong><?php echo htmlspecialchars($al['action']); ?></strong> <div class="small text-muted"><?php echo htmlspecialchars($al['details']); ?> <em>by <?php echo htmlspecialchars($al['user_name']); ?></em></div></li>
+                <?php endforeach; ?>
+              </ul>
+            <?php endif; ?>
           </div>
         </div>
       </div>
@@ -127,7 +145,7 @@ include __DIR__ . '/includes/sidebar.php';
         <div class="row g-3">
           <div class="col-md-4">
             <a href="/feed-inventory-tracker/pos.php" class="text-decoration-none">
-              <div class="card text-white" style="background:linear-gradient(90deg,#05a66b,#09c37a);border:none;">
+              <div class="card text-white glass-btn" style="background:linear-gradient(90deg,#05a66b,#09c37a);border:none;">
                 <div class="card-body py-4">
                   <h4 class="fw-bold">Process Sale</h4>
                   <p class="mb-0">Start a new transaction at the POS</p>
@@ -137,7 +155,7 @@ include __DIR__ . '/includes/sidebar.php';
           </div>
           <div class="col-md-4">
             <a href="/feed-inventory-tracker/inventory.php" class="text-decoration-none">
-              <div class="card text-white" style="background:linear-gradient(90deg,#0b74ff,#2fa8ff);border:none;">
+              <div class="card text-white glass-btn" style="background:linear-gradient(90deg,#0b74ff,#2fa8ff);border:none;">
                 <div class="card-body py-4">
                   <h4 class="fw-bold">Receive Stock</h4>
                   <p class="mb-0">Record new inventory deliveries</p>
@@ -147,7 +165,7 @@ include __DIR__ . '/includes/sidebar.php';
           </div>
           <div class="col-md-4">
             <a href="/feed-inventory-tracker/reports.php" class="text-decoration-none">
-              <div class="card text-white" style="background:linear-gradient(90deg,#6f42c1,#8870ff);border:none;">
+              <div class="card text-white glass-btn" style="background:linear-gradient(90deg,#6f42c1,#8870ff);border:none;">
                 <div class="card-body py-4">
                   <h4 class="fw-bold">View Reports</h4>
                   <p class="mb-0">Analyze sales and inventory data</p>

@@ -1,5 +1,7 @@
 <?php
 $current = basename($_SERVER['PHP_SELF']);
+require_once __DIR__ . '/../functions/permissions.php';
+// Default links for owner/admin
 $links = [
   'index.php' => ['label' => 'Dashboard', 'icon' => 'dashboard'],
   'pos.php' => ['label' => 'Point of Sale', 'icon' => 'pos'],
@@ -9,12 +11,25 @@ $links = [
   'reports.php' => ['label' => 'Reports', 'icon' => 'reports'],
   'users.php' => ['label' => 'User Management', 'icon' => 'users'],
 ];
+
+// If the logged-in user is a storekeeper, limit visible links (view-only)
+if (is_storekeeper()) {
+  $links = [
+    'index.php' => ['label' => 'Dashboard', 'icon' => 'dashboard'],
+    'pos.php' => ['label' => 'Point of Sale', 'icon' => 'pos'],
+    'products.php' => ['label' => 'Products & Inventory', 'icon' => 'products'],
+    'inventory.php' => ['label' => 'Stock Receiving', 'icon' => 'truck'],
+    'credit.php' => ['label' => 'Credit Management', 'icon' => 'users'],
+    'reports.php' => ['label' => 'Reports', 'icon' => 'reports'],
+  ];
+}
 ?>
 <nav class="sidebar">
   <div class="sidebar-inner p-4 d-flex flex-column text-white">
-    <?php if (session_status() === PHP_SESSION_NONE) session_start();
-      $user_name = $_SESSION['full_name'] ?? null;
-      $user_role = $_SESSION['role'] ?? null;
+    <?php
+      if (session_status() === PHP_SESSION_NONE) session_start();
+      $user_name = get_user_full_name();
+      $user_role = get_user_role();
     ?>
     <div class="brand mb-4">
       <div class="brand-title">Dingle Poultry<br/>Supply</div>

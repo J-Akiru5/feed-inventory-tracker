@@ -86,20 +86,20 @@ include __DIR__ . '/includes/sidebar.php';
 
     <div class="row g-3 mb-4">
       <div class="col-md-6">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Store Owners</div>
           <div class="h4"><?php echo (int)$ownersCount; ?></div>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card p-3">
+        <div class="card p-3 glass-panel">
           <div class="small text-muted">Storekeepers</div>
           <div class="h4"><?php echo (int)$keepersCount; ?></div>
         </div>
       </div>
     </div>
 
-    <div class="card mb-4">
+    <div class="card mb-4 glass-panel">
       <div class="card-body">
         <h5 class="card-title">All Users</h5>
         <div class="table-responsive">
@@ -129,7 +129,7 @@ include __DIR__ . '/includes/sidebar.php';
       </div>
     </div>
 
-    <div class="card">
+    <div class="card glass-panel">
       <div class="card-body">
         <h5>Database Management</h5>
         <p class="text-muted">Manage your database with these tools</p>
